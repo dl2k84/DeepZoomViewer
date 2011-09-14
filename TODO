@@ -1,0 +1,20 @@
+DeepZoomViewer TODO
+Author: Don Liang (dl2k84@gmail.com)
+
+- Write comments for private methods (currently only public methods and interfaces have comments).
+- Write more documentation describing how to use the UI.
+- Remove redundant code, optimize repetitive method operations.
+- Refactor the project to separate projects so the
+  DeepZoom image fetching API and the Viewer UI do not rely on each other.
+- Fix the scaling and zooming defect for the thumbnail tile (setting is off)
+- Fix the zooming algorithm (is not reliable after the first level)
+- Implement an image drawing queue (currently uses a rudimentary method)
+- Get rid of the Viewer.properties config file and have it managed in a UI.
+- Improved error logging
+- Smarter tile fetching algorithm with priority queues when multiple images
+  exist in a collection and the viewed image changes.
+- Improve the UI graphical effects for image scrolling ala Silverlight/iOS/Android.
+- Add support for local file system reading of DeepZoom collections, as well
+  as those stored in XAP and DZI files.
+- Implement a smarter image quality control algorithm (lossy/lossless option).
+- Unit tests.

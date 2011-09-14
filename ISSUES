@@ -1,0 +1,14 @@
+DeepZoomViewer Known Issues
+Author: Don Liang (dl2k84@gmail.com)
+
+v0.1, 14/09/2011
+- Zooming into a DeepZoom image either by clicking the "Zoom In" button
+  or double-clicking on a region is not reliable nor accurate after
+  the first zoom level.
+- Bug (race condition) in the DeepZoom tile drawing method whereby the
+  image is drawn before certain tiles finish downloading or loading
+  from the local cache resulting in black areas.
+- The Viewer UI will freeze up if the given baseUrl descriptor
+  contains a large image collection (10+).
+- Crashes when a MultiScaleImage subImage URL is passed to
+  Viewer.properties as the baseURL.

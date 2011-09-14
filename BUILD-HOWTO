@@ -1,0 +1,46 @@
+DeepZoomViewer v0.1
+Author: Don Liang (dl2k84@gmail.com)
+
+The following is detailed information on how to get this project built
+(for those without a Scala development environment set up):
+
+What you need to build this project:
+- Scala 2.9 distribution
+
+ An IDE capable of understanding and compiling Scala code such as Eclipse or
+ IntelliJ IDEA with the Scala plugin installed is recommended to help build
+ and run this project.
+
+What you need to run this project:
+- Java JDK or JRE 1.5 and higher
+
+ As the UI and graphics drawing code draws exclusively from the Java2D and
+ Scala-wrapped Swing APIs of the Java programming language, you will need
+ to have the JRE 1.5 or JDK 1.5 runtime installed on your computer in order
+ to run this application. The Java runtime libraries are freely available
+ on Oracle's web site.
+
+ Eventually, a C# version of this application's UI will be developed using
+ WinForms or WPF but until then this application will only support the
+ execution on Java's JVM.
+
+How to run this application:
+ 1. In the directory with the outputted Java binaries, open the
+ Viewer.properties file and edit the first setting called
+ "baseUrl" to the HTTP or HTTPS URL where the base
+ DeepZoom descriptor is located.
+
+ 2. Run liang.don.dzviewer.DeepZoomViewerMain through java or javaw
+    including related Scala APIs with the classpath argument
+    e.g. java [Scala classpath here] liang.don.dzviewer.DeepZoomViewerMain
+    Alternatively, build a jar specifying the above class as the main class.
+
+ N.B. If the project was not built with the help of an IDE,
+      the Viewer.properties file may be missing. You can find
+      it located at the base directory of this project.
+
+Miscellaneous:
+ This project was written with the help of the IntelliJ IDEA IDE with the
+ Scala plugin installed so the project code should load in that IDE
+ without problems. The reason I chose this IDE is because it coped the
+ best with my development machine.
