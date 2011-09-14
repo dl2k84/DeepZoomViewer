@@ -1,0 +1,23 @@
+DeepZoomViewer v0.1
+Author: Don Liang (dl2k84@gmail.com)
+
+This is a program written in Scala programming language
+to view images that conform to Microsoft's Deep Zoom image format
+which is part of the Silverlight framework.
+See: http://msdn.microsoft.com/en-us/library/cc645050%28v=vs.95%29.aspx
+
+If you have a Scala development environment set up with Java runtime support,
+the application can be started by invoking the main class:
+liang.don.dzviewer.DeepZoomViewerMain
+
+Alternatively, build a jar specifying the above class as the main class.
+
+Otherwise please refer to the BUILD-HOWTO file on how to get this
+project built and running.
+
+v0.1 is an initial publish so there is no doubt redundant and inefficient code.
+This will be optimized and refactored in future revisions.
+
+This project is published under the MIT License (see LICENSE).
+You are free to use this project code in commercial projects as
+long as the copyright header is left intact.
