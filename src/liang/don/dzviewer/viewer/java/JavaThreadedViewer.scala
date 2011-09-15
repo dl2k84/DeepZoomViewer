@@ -7,6 +7,7 @@ import javax.imageio.ImageIO
 import java.net.URL
 import liang.don.dzviewer.tile.{ImageTile, Tile}
 import liang.don.dzviewer.tile.java.TileWrapper
+import liang.don.dzviewer.log.Logger
 
 /**
  *
@@ -24,7 +25,7 @@ trait JavaThreadedViewer extends DeepZoomViewerJ {
   override def create(pageNumber: Int, tiles: Array[Tile]) {
 //    imagePanelLock.synchronized {
 //      if (imagePanel.isTilesLoaded(pageNumber)) {
-//        println(getClass.getName + "create] ***** Image tiles for this page already loaded. *****")
+//        Logger.instance.log(getClass.getName + "create] ***** Image tiles for this page already loaded. *****")
 //        return
 //      }
 //    }
@@ -48,7 +49,7 @@ trait JavaThreadedViewer extends DeepZoomViewerJ {
 
     countDownLock.synchronized {
       if (page2RemainingTilesMap(pageNumber) > 0) {
-        println("Waiting for all images to be created...")
+        Logger.instance.log("Waiting for all images to be created...")
         countDownLock.wait()
       }
     }
@@ -59,14 +60,14 @@ trait JavaThreadedViewer extends DeepZoomViewerJ {
 //    }
 
     // --- DEBUG USE START ---
-    println(getClass.getName + "#create] Tiles creation done for page [ " + pageNumber + " ]. Time taken: " + (System.currentTimeMillis - startTime) + "ms.")
-    println(getClass.getName + "#create] Elapsed time: " + (System.currentTimeMillis - DeepZoomViewerMain.startTime) + "ms.")
+    Logger.instance.log(getClass.getName + "#create] Tiles creation done for page [ " + pageNumber + " ]. Time taken: " + (System.currentTimeMillis - startTime) + "ms.")
+    Logger.instance.log(getClass.getName + "#create] Elapsed time: " + (System.currentTimeMillis - DeepZoomViewerMain.startTime) + "ms.")
     // --- DEBUG USE END ---
   }
 
 
   private def createImage(pageNumber: Int, tile: Tile): ImageTile = {
-    val bufferedTile = new ImageTile(new TileWrapper(ImageIO.read(new URL(tile.uriSource))), tile.uriSource, tile.fileFormat, tile.position, tile.overlapSize, tile.column, tile.row, tile.tileSize)
+    val bufferedTile = new ImageTile(new TileWrapper(ImageIO.read(new URL(tile.uriSource))), tile.uriSource, tile.thumbnailUri, tile.fileFormat, tile.position, tile.overlapSize, tile.column, tile.row, tile.tileSize)
     val countDownLock = page2CreateTilesLockMap(pageNumber)
     countDownLock.synchronized {
       val tileCounter = page2RemainingTilesMap(pageNumber) - 1

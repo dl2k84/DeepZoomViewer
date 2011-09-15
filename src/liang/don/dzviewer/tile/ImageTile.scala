@@ -9,6 +9,7 @@ package liang.don.dzviewer.tile
  * @param image The image data. The instance will differ depending on if this is
  *               executed using the Java or .NET runtime.
  * @param uriSource The URL of the image this tile is from.
+ * @param thumbnailUri The thumbnail URL (which is of maximum 1 tile size) of the image.
  * @param fileFormat The image format.
  * @param position The position of the tile as part of the whole image.
  * @param overlapSize The overlap size (if any) in this tile.
@@ -19,5 +20,5 @@ package liang.don.dzviewer.tile
  * @author Don Liang
  * @Version 0.1, 14/09/2011
  */
-class ImageTile(val image: AnyRef, val uriSource: String, val fileFormat: String, val position: Point, val overlapSize: Int, val column: Int, val row: Int, val tileSize: Int)
+class ImageTile(val image: AnyRef, val uriSource: String, val thumbnailUri: String, val fileFormat: String, val position: Point, val overlapSize: Int, val column: Int, val row: Int, val tileSize: Int)
   extends Serializable { }

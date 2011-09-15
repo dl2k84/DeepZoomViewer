@@ -3,7 +3,7 @@ package liang.don.dzviewer.cache
 import liang.don.dzviewer.tile.ImageTile
 
 /**
- * Basic cache declaration with get and update (set) operations.
+ * Basic cache with get and update (set) operations.
  *
  * @author Don Liang
  * @Version 0.1, 14/09/2011

@@ -6,6 +6,7 @@ import xml.Node
 import liang.don.dzviewer.ImageFetcher
 import liang.don.dzviewer.viewer.imagefetch.TileFetcher
 import liang.don.dzviewer.tile.{Tile, Point}
+import liang.don.dzviewer.log.Logger
 
 /**
  * Deep Zoom image fetch algorithm that takes an initial page value<br>
@@ -59,9 +60,9 @@ trait ProgressiveFetcher extends TileFetcher {
               }
             }
             val pageTiles = ImageFetcher.generatePageTiles(ImageFetcher.getSubImageUrl(baseUri, tile2SourceMap(page)), page2ImageDescriptorMap(page), maxSupportedLevels)
-            println(getClass.getName + "#fetch] Getting tiles for page [ " + page + " ]")
+            Logger.instance.log(getClass.getName + "#fetch] Getting tiles for page [ " + page + " ]")
             val t = pageTiles(0)
-            viewer.createThumbnail(page, new Tile(t.uriSource, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
+            viewer.createThumbnail(page, new Tile(t.uriSource, t.thumbnailUri, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
             viewer.create(page, pageTiles)
           }
         }
@@ -91,9 +92,9 @@ trait ProgressiveFetcher extends TileFetcher {
             }
           }
           val pageTiles = ImageFetcher.generatePageTiles(ImageFetcher.getSubImageUrl(baseUri, tile2SourceMap(page)), page2ImageDescriptorMap(page), maxSupportedLevels)
-          println(getClass.getName + "#fetch] Getting tiles for page [ " + page + " ]")
+          Logger.instance.log(getClass.getName + "#fetch] Getting tiles for page [ " + page + " ]")
           val t = pageTiles(0)
-          viewer.createThumbnail(page, new Tile(t.uriSource, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
+          viewer.createThumbnail(page, new Tile(t.uriSource, t.thumbnailUri, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
           viewer.create(page, pageTiles)
         }
       }

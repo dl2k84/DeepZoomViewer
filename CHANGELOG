@@ -1,6 +1,11 @@
 DeepZoomViewer Revision History
 Author: Don Liang (dl2k84@gmail.com)
 
+v0.1.1, 15/09/2011
+Changed default tile prefetch mechanism from "Progressive" to off (no pre-fetching).
+Fixed a bug in the thumbnail retrieval and drawing mechanism.
+Added logging implementation (java console output).
+
 v0.1, 14/09/2011
 Initial working release.
 See TODO file for list of functions yet to be implemented.

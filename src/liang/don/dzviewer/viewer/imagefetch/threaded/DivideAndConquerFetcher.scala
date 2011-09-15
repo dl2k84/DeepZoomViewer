@@ -8,6 +8,7 @@ import liang.don.dzviewer.config.ViewerProperties
 import liang.don.dzviewer.ImageFetcher
 import liang.don.dzviewer.viewer.imagefetch.TileFetcher
 import liang.don.dzviewer.tile.{Point, Tile}
+import liang.don.dzviewer.log.Logger
 
 /**
  * Deep Zoom image fetch algorithm that takes an initial page value<br>
@@ -61,7 +62,7 @@ trait DivideAndConquerFetcher extends TileFetcher {
 
       // ----- DEBUG START -----
 //      for (i <- 0 until maxThreads) {
-//        println(getClass.getName + "#fetch] LEFT Thread " + i + " of size [" + threadNumber2WorkUnitsMap(i).size + "] will process work units: " + threadNumber2WorkUnitsMap(i))
+//        Logger.instance.log(getClass.getName + "#fetch] LEFT Thread " + i + " of size [" + threadNumber2WorkUnitsMap(i).size + "] will process work units: " + threadNumber2WorkUnitsMap(i))
 //      }
       // ----- DEBUG END -----
 
@@ -79,16 +80,16 @@ trait DivideAndConquerFetcher extends TileFetcher {
                 }
 
                 val workItem = workQueue.dequeue()
-//                println(getClass.getName + "#fetch] Processing work item [ " + workItem + " ] retrieved. Queueing for tile creation...")
+//                Logger.instance.log(getClass.getName + "#fetch] Processing work item [ " + workItem + " ] retrieved. Queueing for tile creation...")
                 if (!viewer.isTilesCached(workItem)) {
                   if (workItem > -1) {
                     val pageTiles = ImageFetcher.generatePageTiles(ImageFetcher.getSubImageUrl(baseUri, tile2SourceMap(workItem)), page2ImageDescriptorMap(workItem), maxSupportedLevels)
                     val t = pageTiles(0)
-                    viewer.createThumbnail(workItem, new Tile(t.uriSource, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
+                    viewer.createThumbnail(workItem, new Tile(t.uriSource, t.thumbnailUri, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
                     viewer.create(workItem, pageTiles)
                   } else {
                     hasMore = false
-                    println(getClass.getName + "#fetch] Received end-of-queue signal. Exiting thread...")
+                    Logger.instance.log(getClass.getName + "#fetch] Received end-of-queue signal. Exiting thread...")
                   }
                 }
               }
@@ -102,13 +103,13 @@ trait DivideAndConquerFetcher extends TileFetcher {
             lock.synchronized {
               page2ImageDescriptorMap.put(page, subImageDescriptor)
               workQueue += page
-//              println(getClass.getName + "#fetch] Descriptor [ " + age + " ] retrieved. Queueing for tile creation...")
+//              Logger.instance.log(getClass.getName + "#fetch] Descriptor [ " + age + " ] retrieved. Queueing for tile creation...")
               lock.notify()
             }
           }
           lock.synchronized {
             workQueue += -1
-//            println(getClass.getName + "#fetch] Sending end of thread queue signal...")
+//            Logger.instance.log(getClass.getName + "#fetch] Sending end of thread queue signal...")
             lock.notify()
           }
         }
@@ -130,7 +131,7 @@ trait DivideAndConquerFetcher extends TileFetcher {
 
       // ----- DEBUG START -----
 //      for (i <- 0 until maxThreads) {
-//        println(getClass.getName + "#fetch] RIGHT Thread " + i + " of size [" + threadNumber2WorkUnitsMap(i).size + "] will process work units: " + threadNumber2WorkUnitsMap(i))
+//        Logger.instance.log(getClass.getName + "#fetch] RIGHT Thread " + i + " of size [" + threadNumber2WorkUnitsMap(i).size + "] will process work units: " + threadNumber2WorkUnitsMap(i))
 //      }
       // ----- DEBUG END -----
 
@@ -148,16 +149,16 @@ trait DivideAndConquerFetcher extends TileFetcher {
                 }
 
                 val workItem = workQueue.dequeue()
-//                println(getClass.getName + "#fetch] Processing work item [ " + workItem + " ] retrieved. Queueing for tile creation...")
+//                Logger.instance.log(getClass.getName + "#fetch] Processing work item [ " + workItem + " ] retrieved. Queueing for tile creation...")
                 if (!viewer.isTilesCached(workItem)) {
                   if (workItem > -1) {
                     val pageTiles = ImageFetcher.generatePageTiles(ImageFetcher.getSubImageUrl(baseUri, tile2SourceMap(workItem)), page2ImageDescriptorMap(workItem), maxSupportedLevels)
                     val t = pageTiles(0)
-                    viewer.createThumbnail(workItem, new Tile(t.uriSource, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
+                    viewer.createThumbnail(workItem, new Tile(t.uriSource, t.thumbnailUri, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
                     viewer.create(workItem, pageTiles)
                   } else {
                     hasMore = false
-                    println(getClass.getName + "#fetch] Received end-of-queue signal. Exiting thread...")
+                    Logger.instance.log(getClass.getName + "#fetch] Received end-of-queue signal. Exiting thread...")
                   }
                 }
               }
@@ -171,13 +172,13 @@ trait DivideAndConquerFetcher extends TileFetcher {
             lock.synchronized {
               page2ImageDescriptorMap.put(page, subImageDescriptor)
               workQueue += page
-//              println(getClass.getName + "#fetch] Descriptor [ " + age + " ] retrieved. Queueing for tile creation...")
+//              Logger.instance.log(getClass.getName + "#fetch] Descriptor [ " + age + " ] retrieved. Queueing for tile creation...")
               lock.notify()
             }
           }
           lock.synchronized {
             workQueue += -1
-//            println(getClass.getName + "#fetch] Sending end of thread queue signal...")
+//            Logger.instance.log(getClass.getName + "#fetch] Sending end of thread queue signal...")
             lock.notify()
           }
         }

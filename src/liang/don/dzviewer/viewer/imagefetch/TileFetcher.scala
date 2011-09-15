@@ -3,6 +3,8 @@ package liang.don.dzviewer.viewer.imagefetch
 import liang.don.dzviewer.viewer.DeepZoomViewer
 
 /**
+ * Performs pre-fetching of image tiles.
+ *
  * @author Don Liang
  * @Version 0.1, 14/09/2011
  */

@@ -23,6 +23,7 @@ object ViewerProperties {
   private val FETCH_MECHANISM_KEY = "fetchMechanism"
   private val IMAGE_QUALITY_KEY = "imageQuality"
   private val INITIAL_PAGE_KEY = "initialPage"
+  private val LOG_TYPE_KEY = "logType"
   private val MAX_WORK_UNITS_PER_THREAD_KEY = "maxWorkUnitsPerThread"
   private val RESET_ZOOM_ON_PAGE_CHANGE_KEY = "resetZoomOnPageChange"
 
@@ -60,8 +61,8 @@ object ViewerProperties {
    * @Version 0.1, 14/09/2011
    */
   object FetchMechanism {
-    def Progressive = 0
-    def DivideAndConquer = 1
+    def Progressive = "Progressive"
+    def DivideAndConquer = "DivideAndConquer"
   }
 
   /**
@@ -72,6 +73,16 @@ object ViewerProperties {
   object ImageQuality {
     def Lossless = "lossless"
     def Lossy = "lossy"
+  }
+
+  /**
+   *
+   * @author Don Liang
+   * @Version 0.1.1, 15/09/2011
+   */
+  object LogType {
+    def Console = "Console"
+    def File = "File"
   }
 
   /**
@@ -88,13 +99,14 @@ object ViewerProperties {
   def baseUrl: String = PROPERTIES.getProperty(BASE_URL_KEY)
   def buildTarget: String = PROPERTIES.getProperty(BUILD_TARGET_KEY)
   def displayRatio: String = PROPERTIES.getProperty(DISPLAY_RATIO_KEY)
-  def fetchMechanism: Int = PROPERTIES.getProperty(FETCH_MECHANISM_KEY).toInt
+  def fetchMechanism: String = PROPERTIES.getProperty(FETCH_MECHANISM_KEY)
   def fileFormat = _fileFormat
   def fileFormat_=(value: String) {
     _fileFormat = value
   }
   def imageQuality: String = PROPERTIES.getProperty(IMAGE_QUALITY_KEY)
   def initialPage: Int = PROPERTIES.getProperty(INITIAL_PAGE_KEY).toInt
+  def logType: String = PROPERTIES.getProperty(LOG_TYPE_KEY)
   def maxWorkUnitsPerThread: Int = PROPERTIES.getProperty(MAX_WORK_UNITS_PER_THREAD_KEY).toInt
   def resetZoomOnPageChange: Boolean = PROPERTIES.getProperty(RESET_ZOOM_ON_PAGE_CHANGE_KEY).toBoolean
 

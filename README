@@ -18,6 +18,10 @@ project built and running.
 v0.1 is an initial publish so there is no doubt redundant and inefficient code.
 This will be optimized and refactored in future revisions.
 
+Currently the viewer UI is written with the Java Swing library.
+A future revision will add a C# UI using WPF or WinForms
+so it can run in the C# CLR virtual machine.
+
 This project is published under the MIT License (see LICENSE).
 You are free to use this project code in commercial projects as
 long as the copyright header is left intact.

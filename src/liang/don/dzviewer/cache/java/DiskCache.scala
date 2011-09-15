@@ -4,6 +4,7 @@ import collection.mutable.{HashMap, Map}
 import liang.don.dzviewer.tile.ImageTile
 import java.io._
 import liang.don.dzviewer.cache.{CacheOptions, DeepZoomCache}
+import liang.don.dzviewer.log.Logger
 
 /**
  * Implements the caching of DeepZoom image tiles onto the local hard disk.
@@ -16,7 +17,7 @@ trait DiskCache extends DeepZoomCache {
   private val filenameWithZoomLevel2TilesMap = new HashMap[String, Map[Int, Array[ImageTile]]]
 
   override def get(page: Int, zoomLevel: Int, fileUuid: String): Array[ImageTile] = {
-//    println("Getting cache for " + fileUuid + " [ " + page + " ] with zoom level=" + zoomLevel)
+//    Logger.instance.log("Getting cache for " + fileUuid + " [ " + page + " ] with zoom level=" + zoomLevel)
     val cache = getFromUuid(fileUuid, zoomLevel)
     cache.getOrElse(page, null)
   }
@@ -72,12 +73,12 @@ trait DiskCache extends DeepZoomCache {
   }
 
   private def saveCache(filename: String, zoomLevel: Int, cache: AnyRef) {
-    println("Saving cache for zoomLevel " + zoomLevel)
+    Logger.instance.log("Saving cache for zoomLevel " + zoomLevel)
     val filenameWithZoomLevel = filename + zoomLevel
     val pathToFile = getCacheFolder + File.separator + filenameWithZoomLevel
     val file = new File(pathToFile)
     if (!file.exists()) {
-      println("new file: " + pathToFile)
+      Logger.instance.log("new file: " + pathToFile)
       file.createNewFile()
     }
     val outputStream = new ObjectOutputStream(new FileOutputStream(file))

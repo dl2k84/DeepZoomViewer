@@ -1,6 +1,7 @@
 package liang.don.dzviewer.viewer.java.ui
 
 import swing.event.{MouseWheelMoved, MouseClicked}
+import liang.don.dzviewer.log.Logger
 
 /**
  * Decorator for ImagePanel that recognizes<br>
@@ -19,12 +20,12 @@ trait MouseRecognition extends ImagePanel {
   reactions += {
     case MouseClicked(source, point, modifiers, clicks, triggersPopup) => {
       if (clicks == 2) {
-        println(getClass.getName + "#mouseClicked] Double click detected at: [" + point + "], scaledX: " + _mouseClickedX + ", scaledY: " + _mouseClickedY)
+        Logger.instance.log(getClass.getName + "#mouseClicked] Double click detected at: [" + point + "], scaledX: " + _mouseClickedX + ", scaledY: " + _mouseClickedY)
         _mouseClickedX += (point.getX.toInt * 2) // Doubling mouse coordinates as the next zoom level's image resolution is 2x the size
         _mouseClickedY += (point.getY.toInt * 2) // See above
 //        _mouseClickedX = point.getX.toInt * zoomInFactorCallback() // Doubling mouse coordinates as the next zoom level's image resolution is 2x the size
 //        _mouseClickedY = point.getY.toInt * zoomInFactorCallback() // See above
-        println(getClass.getName + "#mouseClicked] scaledX: " + _mouseClickedX + ", scaledY: " + _mouseClickedY)
+        Logger.instance.log(getClass.getName + "#mouseClicked] scaledX: " + _mouseClickedX + ", scaledY: " + _mouseClickedY)
         zoomInEventCallback()
       }
     }
@@ -32,12 +33,12 @@ trait MouseRecognition extends ImagePanel {
       if (rotation < 0) {
         // Wheel moved up; zoom in action
         // TODO (rotation + 1) / 2 for 1 level of zoom until max
-        println(getClass.getName + "mouseWheelMoved] Mouse wheel UP detected. Zooming in...")
+        Logger.instance.log(getClass.getName + "mouseWheelMoved] Mouse wheel UP detected. Zooming in...")
         zoomInEventCallback()
       } else {
         // Wheel move down: zoom out action
         // TODO (rotation + 1) / 2 for 1 level of zoom until min
-        println(getClass.getName + "mouseWheelMoved] Mouse wheel DOWN detected. Zooming out...")
+        Logger.instance.log(getClass.getName + "mouseWheelMoved] Mouse wheel DOWN detected. Zooming out...")
         zoomInEventCallback()
       }
     }

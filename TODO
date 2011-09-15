@@ -6,6 +6,7 @@ Author: Don Liang (dl2k84@gmail.com)
 - Remove redundant code, optimize repetitive method operations.
 - Refactor the project to separate projects so the
   DeepZoom image fetching API and the Viewer UI do not rely on each other.
+- Implement a C# runtime UI using WPF or WinForms.
 - Fix the scaling and zooming defect for the thumbnail tile (setting is off)
 - Fix the zooming algorithm (is not reliable after the first level)
 - Implement an image drawing queue (currently uses a rudimentary method)

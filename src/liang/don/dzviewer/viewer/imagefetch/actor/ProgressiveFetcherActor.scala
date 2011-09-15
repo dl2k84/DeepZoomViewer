@@ -6,6 +6,7 @@ import xml.Node
 import liang.don.dzviewer.ImageFetcher
 import actors.Actor
 import liang.don.dzviewer.tile.{Tile, Point}
+import liang.don.dzviewer.log.Logger
 
 /**
  * Deep Zoom image fetch algorithm that takes an initial page value<br>
@@ -90,7 +91,7 @@ trait ProgressiveFetcherActor extends TileFetcher {
             toFetch()
             if (page2ImageDescriptorMap.size >= (leftPageCount + rightPageCount + 1)) {
               // TODO reassess how to impl this properly
-              println(getClass.getName + " EXITING")
+              Logger.instance.log(getClass.getName + " EXITING")
               exit()
             }
           }
@@ -108,17 +109,17 @@ trait ProgressiveFetcherActor extends TileFetcher {
           case Create(page) => {
             if (!viewer.isTilesCached(page)) {
               val pageTiles = ImageFetcher.generatePageTiles(ImageFetcher.getSubImageUrl(baseUri, tile2SourceMap(page)), page2ImageDescriptorMap(page), maxSupportedLevels)
-              println(getClass.getName + "#Create(page)] Getting tiles for page [ " + page + " ]")
+              Logger.instance.log(getClass.getName + "#Create(page)] Getting tiles for page [ " + page + " ]")
               val t = pageTiles(0)
-              viewer.createThumbnail(page, new Tile(t.uriSource, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
+              viewer.createThumbnail(page, new Tile(t.uriSource, t.thumbnailUri, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
               viewer.create(page, pageTiles)
             } else {
-              println(getClass.getName + "Actor#Create] tiles are cached. Not creating new.")
+              Logger.instance.log(getClass.getName + "Actor#Create] tiles are cached. Not creating new.")
             }
 
             count += 1
             if (count >= (leftPageCount + rightPageCount + 1)) {
-              println(getClass.getName + " EXITING")
+              Logger.instance.log(getClass.getName + " EXITING")
               exit()
             }
           }

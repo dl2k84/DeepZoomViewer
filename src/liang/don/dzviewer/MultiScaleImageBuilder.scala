@@ -3,9 +3,10 @@ package liang.don.dzviewer
 import config.ViewerProperties
 import config.ViewerProperties._
 import format.MultiScaleImageElements
+import log.Logger
 import parser.MultiScaleImageFileParser
 import tile.{Point, Tile}
-import viewer.imagefetch.actor.{DivideAndConquerFetcherActor, ProgressiveFetcherActor}
+import viewer.imagefetch.actor.{DummyFetcherActor, DivideAndConquerFetcherActor, ProgressiveFetcherActor}
 import viewer.imagefetch.TileFetcher
 import viewer.java.DeepZoomViewerJ
 import viewer.{ActorThreadedViewer, DeepZoomViewer}
@@ -53,14 +54,14 @@ class MultiScaleImageBuilder {
    * @return DeepZoomViewer
    */
   def buildMultiScaleImageCollectionViewer(descriptor: Node, initialPage: Int): DeepZoomViewer = {
-    println("Building a MultiScaleImageViewer...")
+    Logger.instance.log("Building a MultiScaleImageViewer...")
     val maxSupportedLevels = MultiScaleImageFileParser.getMaxLevel(descriptor)
     val pageCount = MultiScaleImageFileParser.getItemCount(descriptor)
     val tile2SourceMap = MultiScaleImageFileParser.getTile2UrlSourceMap(MultiScaleImageFileParser.getImageCollection(descriptor))
 
     var pageToView = initialPage
 
-    println("Pages in document: " + pageCount)
+    Logger.instance.log("Pages in document: " + pageCount)
     if (initialPage > pageCount - 1) {
       pageToView = (pageCount - 1)
     }
@@ -75,7 +76,7 @@ class MultiScaleImageBuilder {
     viewer.setCurrentPage(pageToView)
     if (!viewer.isThumbnailCached(pageToView)) {
       val t = pageTiles(0)
-      viewer.createThumbnail(pageToView, new Tile(t.uriSource, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
+      viewer.createThumbnail(pageToView, new Tile(t.uriSource, t.thumbnailUri, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
     }
     if (!viewer.isTilesCached(pageToView)) {
       viewer.create(pageToView, pageTiles)
@@ -100,7 +101,7 @@ class MultiScaleImageBuilder {
   }
 
   private def buildMultiScaleSingleImageViewer(descriptor: Node): DeepZoomViewer = {
-    println("Building a SingleImageViewer...")
+    Logger.instance.log("Building a SingleImageViewer...")
     val pageTiles = ImageFetcher.generatePageTiles(new URL(baseUri), descriptor, 0)
 
     val viewer: DeepZoomViewer = {
@@ -117,7 +118,7 @@ class MultiScaleImageBuilder {
     viewer.setCurrentPage(0)
     if (!viewer.isThumbnailCached(0)) {
       val t = pageTiles(0)
-      viewer.createThumbnail(0, new Tile(t.uriSource, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
+      viewer.createThumbnail(0, new Tile(t.uriSource, t.thumbnailUri, t.fileFormat, new Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
     }
     if (!viewer.isTilesCached(0)) {
       viewer.create(0, pageTiles)
@@ -132,7 +133,8 @@ class MultiScaleImageBuilder {
     } else if (FetchMechanism.DivideAndConquer == fetchMechanism) {
       new TileFetcher(viewer, tile2SourceMap, baseUri, pageToView, leftPageCount, rightPageCount, maxSupportedLevels) with DivideAndConquerFetcherActor
     } else {
-      sys.error(getClass.getName + "#getTileFetcher] Unknown fetch mechanism.")
+      // No prefetch.
+      new TileFetcher(viewer, tile2SourceMap, baseUri, pageToView, leftPageCount, rightPageCount, maxSupportedLevels) with DummyFetcherActor
     }
   }
 

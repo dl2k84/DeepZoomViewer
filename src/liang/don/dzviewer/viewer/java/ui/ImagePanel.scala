@@ -9,6 +9,7 @@ import liang.don.dzviewer.tile.java.TileWrapper
 import liang.don.dzviewer.{ImageFetcher, DeepZoomViewerMain}
 import liang.don.dzviewer.config.ViewerProperties
 import liang.don.dzviewer.tile.{Tile, ImageSize, ImageTile}
+import liang.don.dzviewer.log.Logger
 
 /**
  * Handles the drawing and display of image tiles of a DeepZoom iamge.<br>
@@ -32,6 +33,7 @@ class ImagePanel(totalPages: Int) extends Panel {
 
   private var clearImage: Boolean = false
   private var currentImage: Array[ImageTile] = null
+  private var isDrawThumbnail: Boolean = true
   private var _pageToShow: Int = 0 // 0-index origin
   private var _scaleRatio: Double = 1.0
   private var _zoomToShow: Int = 0
@@ -44,6 +46,7 @@ class ImagePanel(totalPages: Int) extends Panel {
   def pageToShow = _pageToShow
   def pageToShow_=(value: Int) {
     _pageToShow = value
+    isDrawThumbnail = true
   }
 
   def zoomToShow = _zoomToShow
@@ -100,32 +103,32 @@ class ImagePanel(totalPages: Int) extends Panel {
     val yCenter = _mouseClickedY / scaleFactor
     val thumbnailImage = thumbnail.image.asInstanceOf[TileWrapper].image.asInstanceOf[BufferedImage]
 
-    println("ThumbnailLevel=" + ViewerProperties.thumbnailLevel + ", scaleFactor=" + scaleFactor + ", zoomToShow=" + zoomToShow)
+    Logger.instance.log("ThumbnailLevel=" + ViewerProperties.thumbnailLevel + ", for pg=" + _pageToShow + ", scaleFactor=" + scaleFactor + ", zoomToShow=" + zoomToShow + ", mouseX=" + _mouseClickedX + ", mouseY=" + _mouseClickedY)
 
     val dx1: Int = if (_mouseClickedX < 1) 0 else (xCenter - (size.width / 2)).abs
     val dy1: Int = if (_mouseClickedY < 1) 0 else (yCenter - (size.height / 2)).abs
-    val dx2: Int = dx1 + ((ViewerProperties.tileSize * scaleFactor) - 1).toInt
-    val dy2: Int = dy1 + ((ViewerProperties.tileSize * scaleFactor) - 1).toInt
+    val dx2: Int = 768// dx1 + ((ViewerProperties.tileSize * scaleFactor) - 1).toInt
+    val dy2: Int = 543//dy1 + ((ViewerProperties.tileSize * scaleFactor) - 1).toInt
 
     val sx1: Int = 0
     val sy1: Int = 0
     val sx2: Int = thumbnailImage.getWidth
     val sy2: Int = thumbnailImage.getHeight
-    println("dx1: " + dx1 + ", dy1: " + dy1 + ", dx2: " + dx2 + ", dy2: " + dy2 + " || sx1: " + sx1 + ", sy1: " + sy1 + ", sx2: " + sx2 + ", sy2: " + sy2)
+    Logger.instance.log("dx1: " + dx1 + ", dy1: " + dy1 + ", dx2: " + dx2 + ", dy2: " + dy2 + " || sx1: " + sx1 + ", sy1: " + sy1 + ", sx2: " + sx2 + ", sy2: " + sy2)
     g.drawImage(thumbnailImage, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, null)
   }
 
   override def paintComponent(g: Graphics2D) {
-    if (clearImage) {
-      clear(g)
-      clearImage = false
+    if (isDrawThumbnail) {
+      drawThumbnail(g)
+      isDrawThumbnail = false
+      repaint()
       return
     }
 
-    drawThumbnail(g)
     while (!isTilesLoaded(_pageToShow, _zoomToShow)) {
       paintLock.synchronized {
-        println("Awaiting tiles to finish downloading...")
+        Logger.instance.log("Awaiting tiles to finish downloading...")
         paintLock.wait(1000)
       }
     }
@@ -140,7 +143,7 @@ class ImagePanel(totalPages: Int) extends Panel {
           var tilePosX: Int = tile.position.x
           var tilePosY: Int = tile.position.y
           if (_scaleRatio != 1) {
-//            println("Scaling x: " + tilePosX + ", y: " + tilePosY + /*" tileW: " + currentTile.getWidth + ", tileH: " + currentTile.getHeight + */", col: " + tile.column + ", row: " + tile.row + ", overlap: " + tile.overlapSize)
+//            Logger.instance.log("Scaling x: " + tilePosX + ", y: " + tilePosY + /*" tileW: " + currentTile.getWidth + ", tileH: " + currentTile.getHeight + */", col: " + tile.column + ", row: " + tile.row + ", overlap: " + tile.overlapSize)
             if (0 < tile.column) {
               tilePosX = (((tilePosX + 1) * _scaleRatio) - 1).toInt
             } else {
@@ -151,7 +154,7 @@ class ImagePanel(totalPages: Int) extends Panel {
             } else {
               tilePosY = (tilePosY * _scaleRatio).toInt
             }
-//            println("Scaling done. x: " + tilePosX + ", y: " + tilePosY)
+//            Logger.instance.log("Scaling done. x: " + tilePosX + ", y: " + tilePosY)
           }
           if (_scaleRatio == 1) {
             if (_mouseClickedX < 0 || _mouseClickedY < 0 || tilePosX <  _mouseClickedX || tilePosY <  _mouseClickedY) {
@@ -160,7 +163,7 @@ class ImagePanel(totalPages: Int) extends Panel {
             if (adjustTile) {
               val topLeftX = if (0 < _mouseClickedX) _mouseClickedX else 0
               val topLeftY = if (0 < _mouseClickedY) _mouseClickedY else 0
-//              println("offsetting by x=" + topLeftX + " y=" + topLeftY + " [x=" + tilePosX + " y=" + tilePosY)
+//              Logger.instance.log("offsetting by x=" + topLeftX + " y=" + topLeftY + " [x=" + tilePosX + " y=" + tilePosY)
               if (topLeftX < tilePosX) {
                 tilePosX -= topLeftX
               }
@@ -168,10 +171,10 @@ class ImagePanel(totalPages: Int) extends Panel {
                 tilePosY -= topLeftY
               }
             } else {
-//              println("No adjustment to tile pos")
+//              Logger.instance.log("No adjustment to tile pos")
             }
 
-            println("Displaying non-scaled image around pos {" + tilePosX + "," + tilePosY + "} scaleRatio: " + _scaleRatio + "mouseX= " + _mouseClickedX + ", mouseY=" + mouseClickedY)
+            Logger.instance.log("Displaying non-scaled image around pos {" + tilePosX + "," + tilePosY + "} scaleRatio: " + _scaleRatio + "mouseX= " + _mouseClickedX + ", mouseY=" + mouseClickedY)
             val dx1: Int = tilePosX - (if (_mouseClickedX < 1) 0 else (_mouseClickedX - (size.width / 2)).abs)// + xCenterOffset
             val dy1: Int = tilePosY - (if (_mouseClickedY < 1) 0 else (_mouseClickedY - (size.height / 2)).abs)// + yCenterOffset
             val dx2: Int = dx1 + tile.tileSize
@@ -180,31 +183,19 @@ class ImagePanel(totalPages: Int) extends Panel {
             val sy1: Int = if (0 < tile.row) tile.overlapSize else 0
             val sx2: Int = if (0 < tile.column) sx1 + tile.tileSize else sx1 + tile.tileSize - 1 // TODO ensure there is no off by 1 error
             val sy2: Int = if (0 < tile.row) sy1 + tile.tileSize else sy1 + tile.tileSize - 1 // same as above.
-            println("dx1: " + dx1 + ", dy1: " + dy1 + ", dx2: " + dx2 + ", dy2: " + dy2 + " || sx1: " + sx1 + ", sy1: " + sy1 + ", sx2: " + sx2 + ", sy2: " + sy2)
+            Logger.instance.log("dx1: " + dx1 + ", dy1: " + dy1 + ", dx2: " + dx2 + ", dy2: " + dy2 + " || sx1: " + sx1 + ", sy1: " + sy1 + ", sx2: " + sx2 + ", sy2: " + sy2)
             g.drawImage(currentTile, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, null)
           } else {
-//            println("    Displaying scaled image around pos {" + tilePosX + "," + tilePosY + "} scaleRatio: " + _scaleRatio)
+            Logger.instance.log("    Displaying scaled image around pos {" + tilePosX + "," + tilePosY + "} scaleRatio: " + _scaleRatio)
             val dx1: Int = tilePosX - (if (_mouseClickedX < 1) 0 else (_mouseClickedX - (size.width / 2)).abs)
             val dy1: Int = tilePosY - (if (_mouseClickedY < 1) 0 else (_mouseClickedY - (size.height / 2)).abs)
-            val dx2: Int = {
-              if (0 < tile.column) {
-                (dx1 + (tile.tileSize * _scaleRatio)).toInt
-              } else {
-                (dx1 + (tile.tileSize * _scaleRatio) - 1).toInt
-              }
-            }
-            val dy2: Int = {
-              if (0 < tile.row) {
-                (dy1 + (tile.tileSize * _scaleRatio)).toInt
-              } else {
-                (dy1 + (tile.tileSize * _scaleRatio) - 1).toInt
-              }
-            }
+            val dx2: Int = dx1 + (tile.tileSize * _scaleRatio).toInt
+            val dy2: Int = dy1 + (tile.tileSize * _scaleRatio).toInt
             val sx1: Int = if (0 < tile.column) tile.overlapSize else 0
             val sy1: Int = if (0 < tile.row) tile.overlapSize else 0
             val sx2: Int = if (0 < tile.column) sx1 + tile.tileSize else sx1 + tile.tileSize - 1 // TODO ensure there is no off by 1 error
             val sy2: Int = if (0 < tile.row) sy1 + tile.tileSize else sy1 + tile.tileSize - 1 // same as above.
-//            println("dx1: " + dx1 + ", dy1: " + dy1 + ", dx2: " + dx2 + ", dy2: " + dy2 + " || sx1: " + sx1 + ", sy1: " + sy1 + ", sx2: " + sx2 + ", sy2: " + sy2)
+            Logger.instance.log("dx1: " + dx1 + ", dy1: " + dy1 + ", dx2: " + dx2 + ", dy2: " + dy2 + " || sx1: " + sx1 + ", sy1: " + sy1 + ", sx2: " + sx2 + ", sy2: " + sy2)
             g.drawImage(currentTile, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, null)
           }
         }
@@ -226,20 +217,20 @@ class ImagePanel(totalPages: Int) extends Panel {
   def isTileLoaded(page: Int, zoomLevel: Int, tile: Tile): Boolean = {
     val zoom2CallbackMap = page2ZoomedLevelCallbackArray(page)
     if (zoom2CallbackMap != null) {
-//      println("zoom2CallbackMap for zoomLevel" + zoomLevel + "\n"+zoom2CallbackMap)
+//      Logger.instance.log("zoom2CallbackMap for zoomLevel" + zoomLevel + "\n"+zoom2CallbackMap)
       val callback = zoom2CallbackMap.getOrElse(zoomLevel, null)
-//      println("callback=" + callback)
+//      Logger.instance.log("callback=" + callback)
       if (callback != null) {
         val pageTiles = callback()
         if (pageTiles != null && pageTiles.length > 0) {
-//          println("CACHE MATCH col=" + tile.column + ", row=" + tile.row + ", pos=(" + tile.position.x + ", " + tile.position.y + ")")
+//          Logger.instance.log("CACHE MATCH col=" + tile.column + ", row=" + tile.row + ", pos=(" + tile.position.x + ", " + tile.position.y + ")")
           pageTiles.foreach {
             thisTile => {
               if (thisTile.column == tile.column
                 && thisTile.row == tile.row
                 && thisTile.image != null
                 && thisTile.image.asInstanceOf[TileWrapper].image != null) {
-//                println("TILE CACHED. col=" + thisTile.column + ", row=" + thisTile.row + ", pos=(" + thisTile.position.x + ", " + thisTile.position.y + ") im=" + thisTile.image)
+//                Logger.instance.log("TILE CACHED. col=" + thisTile.column + ", row=" + thisTile.row + ", pos=(" + thisTile.position.x + ", " + thisTile.position.y + ") im=" + thisTile.image)
                 return true
               }
             }
@@ -301,7 +292,7 @@ class ImagePanel(totalPages: Int) extends Panel {
         val pageTiles = callback()
         if (pageTiles != null && pageTiles.length > 0) {
           // Check that each tile image is loaded.
-//          println("imagePanel.mouseClickedX=" + mouseClickedX + ", imagePanel.mouseClickedY=" + mouseClickedY)
+//          Logger.instance.log("imagePanel.mouseClickedX=" + mouseClickedX + ", imagePanel.mouseClickedY=" + mouseClickedY)
           val xStart = if (_mouseClickedX < 0) 0 else  (_mouseClickedX - (size.width / 2) - 1)
           val xEnd = /*_mouseClickedX*/xStart + size.width
           val yStart = if (_mouseClickedY < 0) 0 else  (_mouseClickedY - (size.height / 2) - 1)
@@ -311,7 +302,7 @@ class ImagePanel(totalPages: Int) extends Panel {
           val startRow = ImageFetcher.calculateGridNumber(yStart + 1, ViewerProperties.tileSize)
           val endRow = ImageFetcher.calculateGridNumber(yEnd, ViewerProperties.tileSize)
 
-//          println("Getting tiles within rectangle (" + xStart + ", " + yStart + ") to (" + xEnd + ", " + yEnd + ") with col=" + startCol + " to " + endCol + ", row=" + startRow + " to " + endRow)
+//          Logger.instance.log("Getting tiles within rectangle (" + xStart + ", " + yStart + ") to (" + xEnd + ", " + yEnd + ") with col=" + startCol + " to " + endCol + ", row=" + startRow + " to " + endRow)
           val filteredTiles = pageTiles.filter {
             tile => {
               if (tile != null) {
@@ -331,12 +322,11 @@ class ImagePanel(totalPages: Int) extends Panel {
               }
             }
           }
-//          filteredTiles.foreach(tile => println("col=" + tile.column + ", row=" + tile.row + ", pos=(" + tile.position.x + ", " + tile.position.y + ")"))
 
 //          pageTiles.foreach(tile => if (tile == null || tile.image == null) { return false })
           filteredTiles.foreach(tile => if (tile == null || tile.image == null || tile.image.asInstanceOf[TileWrapper].image == null) { return false })
           paintLock.synchronized {
-            println("Required tils all downloaded! Notifying...")
+            Logger.instance.log("Required tils all downloaded! Notifying...")
             paintLock.notify()
           }
           return true
@@ -359,16 +349,16 @@ class ImagePanel(totalPages: Int) extends Panel {
     val zoom2CallbackMap = {
       val map = page2ZoomedLevelCallbackArray(page)
       if (map != null) {
-//        println("**map not null for pg " + page + "\n"+map)
+//        Logger.instance.log("**map not null for pg " + page + "\n"+map)
         map
       } else {
         val newMap = new HashMap[Int, () => Array[ImageTile]]
         page2ZoomedLevelCallbackArray(page) = newMap
-//        println("**new map for pg " + page)
+//        Logger.instance.log("**new map for pg " + page)
         newMap
       }
     }
-//    println("setting callback=" + callback)
+//    Logger.instance.log("setting callback=" + callback)
     zoom2CallbackMap.put(zoomLevel, callback)
   }
 
@@ -383,22 +373,10 @@ class ImagePanel(totalPages: Int) extends Panel {
     val newTiles:Array[ImageTile] = Array.ofDim[ImageTile](currentImage.size)
     currentImage.zipWithIndex.foreach { tile => {
       val oldTile = tile._1
-//      println("Adjusting offset x: " + oldTile.position.x + " - " + xOffset + ", y: " + oldTile.position.y + " - " + yOffset)
-      newTiles(tile._2) = new ImageTile(oldTile.image, oldTile.uriSource, oldTile.fileFormat, new liang.don.dzviewer.tile.Point(oldTile.position.x - xOffset.abs, oldTile.position.y - yOffset.abs), oldTile.overlapSize, oldTile.column, oldTile.row, oldTile.tileSize)
+//      Logger.instance.log("Adjusting offset x: " + oldTile.position.x + " - " + xOffset + ", y: " + oldTile.position.y + " - " + yOffset)
+      newTiles(tile._2) = new ImageTile(oldTile.image, oldTile.uriSource, oldTile.thumbnailUri, oldTile.fileFormat, new liang.don.dzviewer.tile.Point(oldTile.position.x - xOffset.abs, oldTile.position.y - yOffset.abs), oldTile.overlapSize, oldTile.column, oldTile.row, oldTile.tileSize)
     }}
     currentImage = newTiles
-  }
-
-  /**
-   * Clears the display panel.
-   */
-  def clear() {
-    clearImage = true
-    repaint()
-  }
-
-  private def clear(g: Graphics2D) {
-    super.paintComponent(g)
   }
 
   /**
@@ -411,7 +389,7 @@ class ImagePanel(totalPages: Int) extends Panel {
    */
   def getTopLeft(zoomedImageCenter: liang.don.dzviewer.tile.Point, imageSize: ImageSize): liang.don.dzviewer.tile.Point = {
 
-    println("visibleSize=" + size + ", xCenter=" + zoomedImageCenter.x + ", yCenter=" + zoomedImageCenter.y)
+    Logger.instance.log("visibleSize=" + size + ", xCenter=" + zoomedImageCenter.x + ", yCenter=" + zoomedImageCenter.y)
     var topLeftX: Int = (zoomedImageCenter.x) - (size.width / 2)
     var topLeftY: Int = (zoomedImageCenter.y) - (size.height / 2)
 
@@ -427,7 +405,7 @@ class ImagePanel(totalPages: Int) extends Panel {
     }
 
     // TODO remove this once the image scaling via the imageQuality setting is implemented
-    println("newImgw=" + imageSize.width + ", newImgH=" + imageSize.height + " topleftX=" + topLeftX + " topLeftY=" + topLeftY)
+    Logger.instance.log("newImgw=" + imageSize.width + ", newImgH=" + imageSize.height + " topleftX=" + topLeftX + " topLeftY=" + topLeftY)
     if (imageSize.width <= size.width || topLeftX < 0) {
       topLeftX = 0
     }
@@ -436,13 +414,13 @@ class ImagePanel(totalPages: Int) extends Panel {
     }
 
 
-//    println(getClass.getName + "#getTopLeft] Zooming image around top-left point { " + topLeftX + ", " + topLeftY + " } centered at { " + zoomedImageCenter.x + ", " + zoomedImageCenter.y + " }")
-//    println(getClass.getName + "#getTopLeft] {visibleWidth: " + size.width + ", visibleHeight: " + size.height + "} || {imageSize.width: " + imageSize.width + ", imageSize.height: " + imageSize.height + "}")
+//    Logger.instance.log(getClass.getName + "#getTopLeft] Zooming image around top-left point { " + topLeftX + ", " + topLeftY + " } centered at { " + zoomedImageCenter.x + ", " + zoomedImageCenter.y + " }")
+//    Logger.instance.log(getClass.getName + "#getTopLeft] {visibleWidth: " + size.width + ", visibleHeight: " + size.height + "} || {imageSize.width: " + imageSize.width + ", imageSize.height: " + imageSize.height + "}")
 
     _mouseClickedX = topLeftX + (size.width / 2)
     _mouseClickedY = topLeftY + (size.height / 2)
 
-    println("getTopLeftX] mouseX=" + _mouseClickedX + ", mouseY=" + _mouseClickedY)
+    Logger.instance.log("getTopLeftX] mouseX=" + _mouseClickedX + ", mouseY=" + _mouseClickedY)
 
     new liang.don.dzviewer.tile.Point(topLeftX, topLeftY)
   }

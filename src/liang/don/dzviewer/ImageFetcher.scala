@@ -1,11 +1,13 @@
 package liang.don.dzviewer
 
+import config.ViewerProperties
 import java.net.URL
 import collection.mutable.HashMap
+import log.Logger
+import math._
 import parser.MultiScaleImageFileParser
 import tile._
 import xml.Node
-import math._
 
 /**
  * Creates and fetches the required image tile.
@@ -105,21 +107,21 @@ object ImageFetcher {
     val imageSize = MultiScaleImageFileParser.getImageSize(descriptor)
     val imageWidth = imageSize.width
     val imageHeight = imageSize.height
-    println("Original image size: " + imageWidth + "x" + imageHeight)
+    Logger.instance.log("Original image size: " + imageWidth + "x" + imageHeight)
 
     val optimalZoom = calculateZoomLevel(maxSupportedLevels, imageWidth, imageHeight, DeepZoomViewerMain.PREFERRED_WINDOW_WIDTH, DeepZoomViewerMain.PREFERRED_WINDOW_HEIGHT)
     // TODO Downscales window to optimal screen size - Called multiple times for documents with multiple pages - fix it.
     DeepZoomViewerMain.VISIBLE_WINDOW_WIDTH = optimalZoom.imageSize.width
     DeepZoomViewerMain.VISIBLE_WINDOW_HEIGHT = optimalZoom.imageSize.height
 
-    println("Optimal zoom dimension set to: " + optimalZoom.imageSize.width + "x" + optimalZoom.imageSize.height + " (Level " + optimalZoom.level + ")")
+    Logger.instance.log("Optimal zoom dimension set to: " + optimalZoom.imageSize.width + "x" + optimalZoom.imageSize.height + " (Level " + optimalZoom.level + ")")
 
     // TODO if-check if image fits in default zoom (where no downscaling is necessary)
     val imageGridSize = calculateImageGridSize(optimalZoom, imageWidth, imageHeight, tileSize)
     val rowCount = imageGridSize.rows
     val colCount = imageGridSize.cols
 
-    //    println("Grid size: " + colCount + " (col) x " + rowCount + " (rows).")
+    //    Logger.instance.log("Grid size: " + colCount + " (col) x " + rowCount + " (rows).")
 
     val tileArray = new Array[Tile](rowCount * colCount)
 
@@ -128,7 +130,8 @@ object ImageFetcher {
     for (row <- 0 until rowCount) {
       for (col <- 0 until colCount) {
         val tileUrl = ImageFetcher.createImageURL(imageUrl, optimalZoom.level, col, row, fileFormat)
-        tileArray(tileCount) = new Tile(tileUrl.toString, fileFormat, calculateTileStartOffset(col, row, tileSize, overlapSize), overlapSize, col, row, tileSize)
+        val thumbnailUrl = ImageFetcher.createImageURL(imageUrl, ViewerProperties.thumbnailLevel, 0, 0, fileFormat)
+        tileArray(tileCount) = new Tile(tileUrl.toString, thumbnailUrl.toString, fileFormat, calculateTileStartOffset(col, row, tileSize, overlapSize), overlapSize, col, row, tileSize)
         tileCount += 1
       }
     }
@@ -143,7 +146,7 @@ object ImageFetcher {
    * @param height Image height.
    */
   def calculateMaximumZoomLevel(width: Int, height: Int): Int = {
-    ceil(log(max(width, height)) / log(2)).toInt
+    ceil(math.log(max(width, height)) / math.log(2)).toInt
   }
 
   /**
@@ -171,13 +174,12 @@ object ImageFetcher {
 
       // TODO investigate scala style equalization instead of if (x && y) style below...
       if (w < preferredWidth && h < preferredHeight) {
-        println("Returning optimal zoom level (inside FOR): level=" + level + " w=" + w + ", h=" + h)
+        Logger.instance.log("Returning optimal zoom level: level=" + level + " w=" + w + ", h=" + h)
         return new ZoomLevel(level, new ImageSize(w, h))
       }
     }
 
     // return lowest zoom level (ideally should not return a 1x1 level as "optimal")
-    println("Returning optimal zoom level (outside FOR): level=" + 0 + " w=" + 1 + ", h=" + 1)
     new ZoomLevel(0, new ImageSize(1, 1))
   }
 
@@ -287,7 +289,7 @@ object ImageFetcher {
    * @return Image tile(s) information as an array.
    */
   def calculateVisibleImageGridSize(zoomLevel: Int, topLeftX: Int, topLeftY: Int, xMax: Int, yMax: Int, tileSize: Int, overlapSize: Int, imageUrl: URL, fileFormat: String): Array[Tile] = {
-    println(getClass.getName + "#calculateVisibleImageGridSize] topLeftX: " + topLeftX + ", topLeftY: " + topLeftY + ", xMax: "  + xMax + " , yMax: " + yMax)
+    Logger.instance.log(getClass.getName + "#calculateVisibleImageGridSize] topLeftX: " + topLeftX + ", topLeftY: " + topLeftY + ", xMax: "  + xMax + " , yMax: " + yMax)
     val endCol = calculateGridNumber(xMax, tileSize)
     val xStart = {
       if (topLeftX <= 0) {
@@ -316,8 +318,9 @@ object ImageFetcher {
     for (row <- startRow to endRow) {
       for (col <- startCol to endCol) {
         val tileUrl = ImageFetcher.createImageURL(imageUrl, zoomLevel, col, row, fileFormat)
+        val thumbnailUrl = ImageFetcher.createImageURL(imageUrl, ViewerProperties.thumbnailLevel, 0, 0, fileFormat)
         val tileOffset = calculateTileStartOffset(col, row, tileSize, overlapSize)
-        tileArray(tileCount) = new Tile(tileUrl.toString, fileFormat, tileOffset, overlapSize, col, row, tileSize)
+        tileArray(tileCount) = new Tile(tileUrl.toString, thumbnailUrl.toString, fileFormat, tileOffset, overlapSize, col, row, tileSize)
         tileCount += 1
       }
     }
