@@ -2,12 +2,13 @@ package liang.don.dzviewer.log.java
 
 import liang.don.dzviewer.log.{LoggerInterface, LogLevel}
 import java.text.SimpleDateFormat
+import java.lang.StringBuffer
 
 /**
- * Java console (System.out) log..
+ * Java console logger.
  *
  * @author Don Liang
- * @Version 0.1.1, 15/09/2011
+ * @Version 0.1, 15/09/2011
  */
 trait ConsoleLogger extends LoggerInterface {
 
@@ -22,17 +23,22 @@ trait ConsoleLogger extends LoggerInterface {
   }
 
   override def log(message: String, logLevel: LogLevel.Value, exception: Exception) {
-    print("[" + df.format(System.currentTimeMillis()) + "]")
-    logLevel match {
-      case LogLevel.Debug => print("[" + LogLevel.Debug.toString.toUpperCase + "]")
-      case LogLevel.Error => print("[" + LogLevel.Error.toString.toUpperCase + "]")
-      case LogLevel.Fatal => print("[" + LogLevel.Fatal.toString.toUpperCase + "]")
-      case LogLevel.Info => print("[" + LogLevel.Info.toString.toUpperCase + "]")
-    }
-    println(message)
-    if (exception != null) {
-      exception.printStackTrace()
+    if (_minimumOutputLevel <= logLevel) {
+      print("[" + df.format(System.currentTimeMillis()) + "]")
+      println(formatMessage(message, logLevel))
+      if (exception != null) {
+        exception.printStackTrace()
+      }
     }
   }
 
+  private def formatMessage(message: String, logLevel: LogLevel.Value): String = {
+    val sb = new StringBuffer
+    sb.append("[").append(padRight(logLevel.toString.toUpperCase)).append("]").append(message).toString
+  }
+
+  private def padRight(message: String): String = {
+    // Adds whitespace padding to the left of the message so all log level output looks better formatted.
+    "%5s".format(message)
+  }
 }

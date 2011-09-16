@@ -69,4 +69,8 @@ object MultiScaleImageFileParser {
     map.toMap // TODO better way to convert mutable to immutable map?
   }
 
+  def isSingleImage(node: Node): Boolean = {
+    (node \\ IMAGE).toString != "" // TODO improve on this evaluation...
+  }
+
 }

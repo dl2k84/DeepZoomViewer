@@ -10,13 +10,15 @@ import liang.don.dzviewer.tile.ImageTile
  */
 abstract class DeepZoomCache {
 
+  protected val baseFolder = "cache"
+
   /**
    * Get the requested image tile(s) info from a cache.<br>
    * Returns null if it does not exist in the cache.<br>
    *
    * @param page The page to get.
    * @param zoomLevel The zoom level to get.
-   * @param fileUuid The hashed value of the image tile to get.
+   * @param fileUuid The hashed value of the image tile(s) to get.
    *
    * @return The requested image tile(s) as an array.
    */

@@ -2,7 +2,6 @@ package liang.don.dzviewer
 
 import config.ViewerProperties
 import config.ViewerProperties._
-import format.MultiScaleImageElements
 import log.Logger
 import parser.MultiScaleImageFileParser
 import tile.{Point, Tile}
@@ -38,7 +37,7 @@ class MultiScaleImageBuilder {
     ViewerProperties.fileFormat = MultiScaleImageFileParser.getFormat(descriptor)
     ViewerProperties.tileSize = MultiScaleImageFileParser.getTileSize(descriptor)
 
-    if (isSingleImage(descriptor)) {
+    if (MultiScaleImageFileParser.isSingleImage(descriptor)) {
       buildMultiScaleSingleImageViewer(descriptor)
     } else {
       buildMultiScaleImageCollectionViewer(descriptor, initialPage)
@@ -96,22 +95,23 @@ class MultiScaleImageBuilder {
         // TODO - .NET Viewer
         null
       } else {
-       sys.error(getClass.getName + "#buildMultiScaleSingleImageViewer] Invalid buildTarget.")
+       sys.error("[" + getClass.getName + "#buildDeepZoomViewer] Invalid buildTarget.")
       }
   }
 
   private def buildMultiScaleSingleImageViewer(descriptor: Node): DeepZoomViewer = {
     Logger.instance.log("Building a SingleImageViewer...")
     val pageTiles = ImageFetcher.generatePageTiles(new URL(baseUri), descriptor, 0)
+    val tile2SourceMap: Map[Int, String] = Map[Int, String](0 -> baseUrl)
 
     val viewer: DeepZoomViewer = {
       if (BuildTarget.Java == buildTarget) {
-        new DeepZoomViewerJ(null, 1, null) with ActorThreadedViewer
+        new DeepZoomViewerJ(descriptor, 1, tile2SourceMap) with ActorThreadedViewer
       } else if (BuildTarget.Net == buildTarget) {
         // TODO - .NET Viewer
         null
       } else {
-       sys.error(getClass.getName + "#buildMultiScaleSingleImageViewer] Invalid buildTarget.")
+       sys.error("[" + getClass.getName + "#buildMultiScaleSingleImageViewer] Invalid buildTarget.")
       }
     }
     viewer.loadCache()
@@ -145,9 +145,5 @@ class MultiScaleImageBuilder {
 
     val fetcher = getTileFetcher(viewer, tile2SourceMap, baseUri, pageToView, leftPageCount, rightPageCount, maxSupportedLevels)
     fetcher.fetch()
-  }
-
-  private def isSingleImage(node: Node): Boolean = {
-    (node \\ MultiScaleImageElements.IMAGE).toString != "" // TODO improve on this evaluation...
   }
 }

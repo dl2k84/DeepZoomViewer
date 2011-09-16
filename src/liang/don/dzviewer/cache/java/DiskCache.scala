@@ -3,8 +3,8 @@ package liang.don.dzviewer.cache.java
 import collection.mutable.{HashMap, Map}
 import liang.don.dzviewer.tile.ImageTile
 import java.io._
-import liang.don.dzviewer.cache.{CacheOptions, DeepZoomCache}
-import liang.don.dzviewer.log.Logger
+import liang.don.dzviewer.cache.DeepZoomCache
+import liang.don.dzviewer.log.{LogLevel, Logger}
 
 /**
  * Implements the caching of DeepZoom image tiles onto the local hard disk.
@@ -17,7 +17,7 @@ trait DiskCache extends DeepZoomCache {
   private val filenameWithZoomLevel2TilesMap = new HashMap[String, Map[Int, Array[ImageTile]]]
 
   override def get(page: Int, zoomLevel: Int, fileUuid: String): Array[ImageTile] = {
-//    Logger.instance.log("Getting cache for " + fileUuid + " [ " + page + " ] with zoom level=" + zoomLevel)
+    Logger.instance.log("[" + getClass.getName + "#get] Getting cache for " + fileUuid + " [ " + page + " ] with zoom level=" + zoomLevel, LogLevel.Debug)
     val cache = getFromUuid(fileUuid, zoomLevel)
     cache.getOrElse(page, null)
   }
@@ -64,7 +64,7 @@ trait DiskCache extends DeepZoomCache {
    * If the configured cache folder does not exist, also create it.
    */
   private def getCacheFolder: String = {
-    val cacheBaseFolder = CacheOptions.baseFolder
+    val cacheBaseFolder = baseFolder
     val cacheFolder = new File(cacheBaseFolder)
     if (!cacheFolder.exists()) {
       cacheFolder.mkdirs()
@@ -73,12 +73,12 @@ trait DiskCache extends DeepZoomCache {
   }
 
   private def saveCache(filename: String, zoomLevel: Int, cache: AnyRef) {
-    Logger.instance.log("Saving cache for zoomLevel " + zoomLevel)
+    Logger.instance.log("[" + getClass.getName + "#saveCache] Saving cache for zoomLevel " + zoomLevel, LogLevel.Debug)
     val filenameWithZoomLevel = filename + zoomLevel
     val pathToFile = getCacheFolder + File.separator + filenameWithZoomLevel
     val file = new File(pathToFile)
     if (!file.exists()) {
-      Logger.instance.log("new file: " + pathToFile)
+      Logger.instance.log("[" + getClass.getName + "#saveCache] Creating new cache file: " + pathToFile, LogLevel.Debug)
       file.createNewFile()
     }
     val outputStream = new ObjectOutputStream(new FileOutputStream(file))

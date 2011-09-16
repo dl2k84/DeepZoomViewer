@@ -1,8 +1,15 @@
 DeepZoomViewer Revision History
 Author: Don Liang (dl2k84@gmail.com)
 
+v0.1.2, 16/09/2011
+Bug where parsing single image XML descriptors caused the application to crash
+has been fixed.
+Improved logging by categorizing messages into different log levels.
+Cleaned up commented out source code.
+Fixed the thumbnail retrieval and drawing mechanism.
+
 v0.1.1, 15/09/2011
-Changed default tile prefetch mechanism from "Progressive" to off (no pre-fetching).
+Changed default tile prefetch mechanism from "Progressive" to off.
 Fixed a bug in the thumbnail retrieval and drawing mechanism.
 Added logging implementation (java console output).
 

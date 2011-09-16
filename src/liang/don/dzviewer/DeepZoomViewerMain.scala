@@ -10,7 +10,6 @@ import swing.SimpleSwingApplication
  */
 object DeepZoomViewerMain extends SimpleSwingApplication {
 
-  var startTime: Long = 0
   val PREFERRED_WINDOW_WIDTH = 800 //1920
   val PREFERRED_WINDOW_HEIGHT = 600 // 1200
   var VISIBLE_WINDOW_WIDTH = 800 //1920

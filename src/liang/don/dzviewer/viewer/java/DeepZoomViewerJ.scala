@@ -15,7 +15,7 @@ import liang.don.dzviewer.cache.java.DiskCache
 import java.util.UUID
 import liang.don.dzviewer.tile.{Point, Tile, ImageSize, ImageTile}
 import liang.don.dzviewer.cache.{CacheOptions, DeepZoomCache}
-import liang.don.dzviewer.log.Logger
+import liang.don.dzviewer.log.{LogLevel, Logger}
 
 /**
  * Java-based viewer that manages information regarding the image or tile's
@@ -80,7 +80,7 @@ abstract class DeepZoomViewerJ(descriptor: Node, totalPages: Int, tile2SourceMap
   }
 
   private def getFileHash(uri: String): String = {
-    Logger.instance.log("Generating file hash for uri: " + uri)
+    Logger.instance.log("[" + getClass.getName + "#getFileHash] Generating file hash for uri: " + uri, LogLevel.Debug)
     val sha1 = java.security.MessageDigest.getInstance(CacheOptions.HashType.SHA1.toString)
     val fileHash = sha1.digest(uri.getBytes)
     UUID.nameUUIDFromBytes(fileHash).toString // TODO think more later whether base-64 or Uuid is better.
@@ -89,11 +89,14 @@ abstract class DeepZoomViewerJ(descriptor: Node, totalPages: Int, tile2SourceMap
   private def currentPageImageSize: ImageSize = getImageSize(imagePanel.pageToShow)//MultiScaleImageFileParser.getImageSizeFromCollection(descriptor, imagePanel.pageToShow)
 
   private def getImageSize(page: Int): ImageSize = {
-    MultiScaleImageFileParser.getImageSizeFromCollection(descriptor, page)
+    if (MultiScaleImageFileParser.isSingleImage(descriptor)) {
+      MultiScaleImageFileParser.getImageSize(descriptor)
+    } else {
+      MultiScaleImageFileParser.getImageSizeFromCollection(descriptor, page)
+    }
   }
 
   private def defaultZoomLevel: Int = {
-    Logger.instance.log("getting default zoom level for pg [ " + imagePanel.pageToShow + " ] . imgW=" + currentPageImageSize.width + ", imgH=" + currentPageImageSize.height)
     ImageFetcher.calculateZoomLevel(0, currentPageImageSize.width, currentPageImageSize.height, DeepZoomViewerMain.PREFERRED_WINDOW_WIDTH, DeepZoomViewerMain.PREFERRED_WINDOW_HEIGHT).level
   }
 
@@ -126,23 +129,27 @@ abstract class DeepZoomViewerJ(descriptor: Node, totalPages: Int, tile2SourceMap
   private def updatePage() {
     zoomLevel = defaultZoomLevel
     page2ZoomLevelArray(imagePanel.pageToShow) = defaultZoomLevel
-    Logger.instance.log("resestting zoom for pg [ " + imagePanel.pageToShow + " ]")
     imagePanel.resetMouseClickedPoint()
 
     // centers the image if it is larger than the viewable size
-    val maxSupportedLevels = MultiScaleImageFileParser.getMaxLevel(descriptor)
+//    val maxSupportedLevels = MultiScaleImageFileParser.getMaxLevel(descriptor)
 //    val displayedZoomLevel = ImageFetcher.calculateZoomLevel(maxSupportedLevels, currentPageImageSize.width, currentPageImageSize.height, DeepZoomViewerMain.PREFERRED_WINDOW_WIDTH, DeepZoomViewerMain.PREFERRED_WINDOW_HEIGHT)
-    Logger.instance.log("CENTERING PAGE AS NEEDED: imageW=" + imagePanel.size.width + ", imageH=" + imagePanel.size.height + " max=" + DeepZoomViewerMain.PREFERRED_WINDOW_WIDTH + "x" + DeepZoomViewerMain.PREFERRED_WINDOW_HEIGHT)
     if (!isTilesCached(imagePanel.pageToShow)) {
       // TODO repetitive. fix this.
-      val maxSupportedLevels = MultiScaleImageFileParser.getMaxLevel(descriptor)
+      val maxSupportedLevels = {
+        if (MultiScaleImageFileParser.isSingleImage(descriptor)) {
+          0
+        } else {
+          MultiScaleImageFileParser.getMaxLevel(descriptor)
+        }
+      }
       val subImageMap = ImageFetcher.fetchImageDescriptor(ViewerProperties.baseUrl, tile2SourceMap(imagePanel.pageToShow))
       val pageTiles = ImageFetcher.generatePageTiles(ImageFetcher.getSubImageUrl(ViewerProperties.baseUrl, tile2SourceMap(imagePanel.pageToShow)), subImageMap, maxSupportedLevels)
       val t = pageTiles(0)
       createThumbnail(imagePanel.pageToShow, new Tile(t.uriSource, t.thumbnailUri, t.fileFormat, new liang.don.dzviewer.tile.Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
       create(imagePanel.pageToShow, pageTiles)
     } else {
-      Logger.instance.log(getClass.getName + "updatePage] ***** Image tiles for this page already loaded. *****")
+      Logger.instance.log("[" + getClass.getName + "#updatePage] ***** Image tiles for this page already loaded. *****", LogLevel.Debug)
     }
 
     imagePanel.repaint()
@@ -196,8 +203,7 @@ abstract class DeepZoomViewerJ(descriptor: Node, totalPages: Int, tile2SourceMap
     if (imagePanel.scaleRatio == 1) {
       // TODO too many arguments for zoomedTiles
       val zoomedTiles = ImageFetcher.calculateVisibleImageGridSize(zoomLevel, imageTopLeftX, imageTopLeftY, xMax, yMax, MultiScaleImageFileParser.getTileSize(descriptor), MultiScaleImageFileParser.getImageOverlapSize(subImageDescriptor), imageUrl, MultiScaleImageFileParser.getFormat(descriptor))
-      Logger.instance.log("Returned ZoomedTiles info for zoom=" + zoomLevel)
-      zoomedTiles.foreach(tile => Logger.instance.log("col=" + tile.column + ", row=" + tile.row + ", pos=(" + tile.position.x + ", " + tile.position.y + ")"))
+//      zoomedTiles.foreach(tile => Logger.instance.log("col=" + tile.column + ", row=" + tile.row + ", pos=(" + tile.position.x + ", " + tile.position.y + ")"))
       val t = zoomedTiles(0)
       createThumbnail(imagePanel.pageToShow, new Tile(t.uriSource, t.thumbnailUri, t.fileFormat, new liang.don.dzviewer.tile.Point(0, 0), t.overlapSize, 0, 0, t.tileSize))
       create(imagePanel.pageToShow, zoomedTiles)
@@ -209,8 +215,6 @@ abstract class DeepZoomViewerJ(descriptor: Node, totalPages: Int, tile2SourceMap
   }
 
   private def getZoomedImageCenter: Point = {
-//    val zoomedImageSize = ImageFetcher.calculateImageSize(zoomLevel, maxZoomLevel, currentPageImageSize.width, currentPageImageSize.height)
-//    new Point(zoomedImageSize.width / 2, zoomedImageSize.height / 2)
     val zoomedSize = ImageFetcher.calculateZoomLevel(0, currentPageImageSize.width, currentPageImageSize.height, DeepZoomViewerMain.PREFERRED_WINDOW_WIDTH, DeepZoomViewerMain.PREFERRED_WINDOW_HEIGHT)
     val size = ImageFetcher.calculateImageSize(zoomedSize.level, maxZoomLevel, currentPageImageSize.width, currentPageImageSize.height)
     new Point(size.width, size.height)
@@ -226,10 +230,10 @@ abstract class DeepZoomViewerJ(descriptor: Node, totalPages: Int, tile2SourceMap
   override def cacheTiles(page: Int, tiles: Array[ImageTile]) {
     imagePanelLock.synchronized {
       val baseUrl = ViewerProperties.baseUrl
-      Logger.instance.log(getClass.getName + "#cacheTiles] baseUrl: " + baseUrl)
+      Logger.instance.log("[" + getClass.getName + "#cacheTiles] baseUrl: " + baseUrl, LogLevel.Debug)
 
       val fileUuid = getFileHash(ImageFetcher.getSubImageUrl(ViewerProperties.baseUrl, tile2SourceMap(page)).toString)
-      Logger.instance.log(getClass.getName + "#cacheTiles] caching pg [ " + page + " ] zoommLevel: " + page2ZoomLevelArray(page) + " tiles of  " + fileUuid + "...")
+      Logger.instance.log("[" + getClass.getName + "#cacheTiles] Caching pg [ " + page + " ] zoommLevel: " + page2ZoomLevelArray(page) + " tiles of  " + fileUuid + "...", LogLevel.Debug)
       diskCache.update(page, page2ZoomLevelArray(page), fileUuid, tiles)
       imagePanel.setTiles(page, page2ZoomLevelArray(page), (() => diskCache.get(page, page2ZoomLevelArray(page), fileUuid)))
       imagePanel.repaint()
@@ -256,20 +260,15 @@ abstract class DeepZoomViewerJ(descriptor: Node, totalPages: Int, tile2SourceMap
 
   override def loadCache() {
     val baseUrl = ViewerProperties.baseUrl
-    Logger.instance.log(getClass.getName + "#loadCache] loading cache for baseUrl: " + baseUrl)
+    Logger.instance.log("Loading cache for baseUrl: " + baseUrl)
 
     for (page <- 0 until totalPages) {
       // Load for all levels from optimal size upwards, as well as the first thumbnail (max 256x256 tile image)
-      // TODO implement the function that calculates the level with the 256x256 max thumbnail (won't be cached yet)
-//      val thumbnailSizeZoomLevel = getThumbnailSizeZoomLevel()
-//      imagePanel.setTiles(i, (() => diskCache.get(i, thumbnailSizeZoomLevel, fileUuid)))
       val fileUuid = getFileHash(ImageFetcher.getSubImageUrl(ViewerProperties.baseUrl, tile2SourceMap(page)).toString)
       val zoomLevel = getOptimalZoomLevel(page)
       page2ZoomLevelArray(page) = zoomLevel
-      Logger.instance.log("loadCache zoom level: " + zoomLevel)
       imagePanel.setTiles(page, ViewerProperties.thumbnailLevel, (() => diskCache.get(page, ViewerProperties.thumbnailLevel, fileUuid)))
       for (level <- zoomLevel  to maxZoomLevel by 1) {
-        Logger.instance.log(getClass.getName + "#loadCache] loading cache for pg [ " + page + " ] zoomLevel [ " + level + " tiles of " + fileUuid + "...")
         imagePanel.setTiles(page, level, (() => diskCache.get(page, level, fileUuid)))
       }
     }
@@ -277,9 +276,8 @@ abstract class DeepZoomViewerJ(descriptor: Node, totalPages: Int, tile2SourceMap
 
   override def setCurrentPage(currentPage: Int) {
     imagePanel.pageToShow = currentPage
-    Logger.instance.log("SET setting zoom=" + page2ZoomLevelArray(currentPage))
     imagePanel.zoomToShow = page2ZoomLevelArray(currentPage)
-    // Load ImagePanel Tile array to current pg.
+    imagePanel.optimalImageSize = ImageFetcher.calculateZoomLevel(0, currentPageImageSize.width, currentPageImageSize.height, DeepZoomViewerMain.PREFERRED_WINDOW_WIDTH, DeepZoomViewerMain.PREFERRED_WINDOW_HEIGHT).imageSize
   }
 
   override def show(): Frame = {

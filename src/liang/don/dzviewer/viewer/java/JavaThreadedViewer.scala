@@ -37,10 +37,6 @@ trait JavaThreadedViewer extends DeepZoomViewerJ {
     page2CreateTilesLockMap.put(pageNumber, countDownLock)
     page2RemainingTilesMap.put(pageNumber, tiles.length)
 
-    // --- DEBUG USE START ---
-    val startTime = System.currentTimeMillis
-    // --- DEBUG USE END ---
-
     tiles.zipWithIndex.foreach { tile =>
       spawn{
         pageTiles(tile._2) = createImage(pageNumber, tile._1)
@@ -58,11 +54,6 @@ trait JavaThreadedViewer extends DeepZoomViewerJ {
 //    imagePanelLock.synchronized {
 //      imagePanel.setTiles(pageNumber, pageTiles)
 //    }
-
-    // --- DEBUG USE START ---
-    Logger.instance.log(getClass.getName + "#create] Tiles creation done for page [ " + pageNumber + " ]. Time taken: " + (System.currentTimeMillis - startTime) + "ms.")
-    Logger.instance.log(getClass.getName + "#create] Elapsed time: " + (System.currentTimeMillis - DeepZoomViewerMain.startTime) + "ms.")
-    // --- DEBUG USE END ---
   }
 
 

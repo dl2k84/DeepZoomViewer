@@ -1,12 +1,20 @@
 package liang.don.dzviewer.log
 
+import liang.don.dzviewer.config.ViewerProperties
+
 /**
  * Logs information.
  *
  * @author Don Liang
- * @Version 0.1.1, 15/09/2011
+ * @Version 0.1, 15/09/2011
  */
 abstract class LoggerInterface {
+
+  /**
+   * Sets the minimum log level to output.
+   * Log message with levels below the specified logLevel will not be outputted.
+   */
+  protected val _minimumOutputLevel: LogLevel.Value = ViewerProperties.minimumLogLevel
 
   /**
    * Logs a message with a default log level.

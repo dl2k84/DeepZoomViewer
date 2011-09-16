@@ -8,8 +8,6 @@ package liang.don.dzviewer.cache
  */
 object CacheOptions {
 
-  def baseFolder = "cache"
-
   /**
    * Hash style for cached image tiles..
    *
