@@ -15,6 +15,16 @@ Alternatively, build a jar specifying the above class as the main class.
 Otherwise please refer to the BUILD-HOWTO file on how to get this
 project built and running.
 
+- Creating Deep Zoom images for viewing:
+The common way to generate Deep Zoom image files is to use
+Microsoft's Deep Zoom Composer.
+
+For those not running Windows (or don't want to use Deep Zoom Composer),
+a simple command-line interface version is in the works at
+https://github.com/dl2k84/DeepZoomImageConverter
+which is going to be a Scala port of the Deep Zoom image converter
+I wrote using C# more than a year ago.
+
 v0.1 is an initial publish so there is no doubt redundant and inefficient code.
 This will be optimized and refactored in future revisions.
 
