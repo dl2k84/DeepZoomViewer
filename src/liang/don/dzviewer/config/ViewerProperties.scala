@@ -110,18 +110,18 @@ object ViewerProperties {
   def initialPage: Int = PROPERTIES.getProperty(INITIAL_PAGE_KEY).toInt
   def logType: String = PROPERTIES.getProperty(LOG_TYPE_KEY)
   def maxWorkUnitsPerThread: Int = PROPERTIES.getProperty(MAX_WORK_UNITS_PER_THREAD_KEY).toInt
-  def minimumLogLevel: LogLevel.Value = {
-    val level = PROPERTIES.getProperty(MINIMUM_LOG_LEVEL_KEY).toLowerCase
-    if (LogLevel.Info.toString.toLowerCase == level) {
-      LogLevel.Info
-    } else if (LogLevel.Error.toString.toLowerCase == level) {
-      LogLevel.Error
-    } else if (LogLevel.Fatal.toString.toLowerCase == level) {
-      LogLevel.Fatal
-    } else {
-      LogLevel.Debug
+    def minimumLogLevel: LogLevel.Value = {
+      val level = PROPERTIES.getProperty(MINIMUM_LOG_LEVEL_KEY).toLowerCase
+      if (LogLevel.Info.toString.toLowerCase == level) {
+        LogLevel.Info
+      } else if (LogLevel.Error.toString.toLowerCase == level) {
+        LogLevel.Error
+      } else if (LogLevel.Fatal.toString.toLowerCase == level) {
+        LogLevel.Fatal
+      } else {
+        LogLevel.Debug
+      }
     }
-  }
   def resetZoomOnPageChange: Boolean = PROPERTIES.getProperty(RESET_ZOOM_ON_PAGE_CHANGE_KEY).toBoolean
 
 //  @deprecated("threadModel setting is no longer used.", "0.0.1")

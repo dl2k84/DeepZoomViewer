@@ -3,13 +3,13 @@ package liang.don.dzviewer.viewer.java.ui
 import swing._
 import java.awt.image.BufferedImage
 import java.lang.Object
-import java.awt.{Dimension, Color}
 import collection.mutable.HashMap
 import liang.don.dzviewer.tile.java.TileWrapper
 import liang.don.dzviewer.{ImageFetcher, DeepZoomViewerMain}
 import liang.don.dzviewer.config.ViewerProperties
 import liang.don.dzviewer.tile.{Tile, ImageSize, ImageTile}
 import liang.don.dzviewer.log.{LogLevel, Logger}
+import java.awt.{RenderingHints, Dimension, Color}
 
 /**
  * Handles the drawing and display of image tiles of a DeepZoom image.<br>
@@ -120,6 +120,8 @@ class ImagePanel(totalPages: Int) extends Panel {
     val sx2: Int = thumbnailImage.getWidth
     val sy2: Int = thumbnailImage.getHeight
     Logger.instance.log("[" + getClass.getName + "#drawThumbnail] dx1: " + dx1 + ", dy1: " + dy1 + ", dx2: " + dx2 + ", dy2: " + dy2 + " || sx1: " + sx1 + ", sy1: " + sy1 + ", sx2: " + sx2 + ", sy2: " + sy2, LogLevel.Debug)
+    // Using Bilinear instead of Bicubic since I felt rendering time is more important than absolute quality.
+    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
     g.drawImage(thumbnailImage, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, null)
   }
 
@@ -197,6 +199,8 @@ class ImagePanel(totalPages: Int) extends Panel {
             val sx2: Int = sx1 + tile.tileSize - (if (0 < tile.column) 0 else 1)
             val sy2: Int = sy1 + tile.tileSize - (if (0 < tile.row) 0 else 1)
             Logger.instance.log("[" + getClass.getName + "#paintComponent] dx1: " + dx1 + ", dy1: " + dy1 + ", dx2: " + dx2 + ", dy2: " + dy2 + " || sx1: " + sx1 + ", sy1: " + sy1 + ", sx2: " + sx2 + ", sy2: " + sy2, LogLevel.Debug)
+            // Using Bilinear instead of Bicubic since I felt rendering time is more important than absolute quality.
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
             g.drawImage(currentTile, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, null)
           }
         }

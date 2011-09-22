@@ -1,6 +1,11 @@
 DeepZoomViewer Revision History
 Author: Don Liang (dl2k84@gmail.com)
 
+v0.1.5, 22/09/2011
+Implemented Bilinear Interpolation rendering for images that are scaled(zoomed) up.
+Bilinear was chosen over Bicubic due to the quality versus performance trade-off.
+May include as an option in the future to toggle Bilinear/Bicubic.
+
 v0.1.2, 16/09/2011
 Bug where parsing single image XML descriptors caused the application to crash
 has been fixed.

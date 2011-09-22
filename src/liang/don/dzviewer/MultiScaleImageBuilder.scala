@@ -91,12 +91,12 @@ class MultiScaleImageBuilder {
   private def buildDeepZoomViewer(descriptor: Node, totalPages: Int, tile2SourceMap: Map[Int, String], maxSupportedLevels: Int): DeepZoomViewer = {
     if (BuildTarget.Java == buildTarget) {
       new DeepZoomViewerJ(descriptor, totalPages, tile2SourceMap) with ActorThreadedViewer
-      } else if (BuildTarget.Net == buildTarget) {
+    } else if (BuildTarget.Net == buildTarget) {
         // TODO - .NET Viewer
         null
-      } else {
+    } else {
        sys.error("[" + getClass.getName + "#buildDeepZoomViewer] Invalid buildTarget.")
-      }
+    }
   }
 
   private def buildMultiScaleSingleImageViewer(descriptor: Node): DeepZoomViewer = {
